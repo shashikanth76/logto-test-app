@@ -419,7 +419,7 @@
         </div>
         <div>
           <label style="font-size: 0.8rem; font-weight: 600;">OIDC Issuer / Base URL</label>
-          <input id="issuerInput" class="input-field" value="https://auth.allsrc.dev/oidc" />
+          <input id="issuerInput" class="input-field" value="https://logto-test.http2xx.io/oidc" />
           <small style="font-size: 0.75rem; color: var(--text-muted);">Must host <code>.well-known/openid-configuration</code></small>
         </div>
         <div>
@@ -451,18 +451,18 @@
       <div style="max-width: 620px; margin: 0 auto; text-align: center; padding: 1.5rem 0;">
         <h2 style="font-size: 1.6rem; margin-bottom: 0.75rem; font-weight: 700;">Authenticate via OpenID Connect</h2>
         <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
-          Initiates an RFC 7636 Authorization Code flow with SHA-256 PKCE against <strong id="heroIssuerName" style="color: var(--text);">auth.allsrc.dev</strong>.
+          Initiates an RFC 7636 Authorization Code flow with SHA-256 PKCE against <strong id="heroIssuerName" style="color: var(--text);">logto-test.http2xx.io</strong>.
         </p>
 
         <button id="signInBtn" class="btn btn-primary" style="font-size: 1rem; padding: 0.85rem 2.25rem;">
-          Sign in via auth.allsrc.dev &rarr;
+          Sign in via logto-test.http2xx.io &rarr;
         </button>
       </div>
 
       <div class="config-grid">
         <div class="config-item">
           <div class="config-label">OIDC Issuer</div>
-          <div id="displayIssuer" class="config-value">https://auth.allsrc.dev/oidc</div>
+          <div id="displayIssuer" class="config-value">https://logto-test.http2xx.io/oidc</div>
         </div>
         <div class="config-item">
           <div class="config-label">Client ID</div>
@@ -518,8 +518,8 @@
     // Conforms strictly to RFC 7636, RFC 6749, and OpenID Connect Core 1.0.
     // =========================================================================
 
-    const DEFAULT_ISSUER = 'https://auth.allsrc.dev/oidc';
-    const DEFAULT_CLIENT_ID = 'u9jezd7gnokg1pmoktpf1';
+    const DEFAULT_ISSUER = 'https://logto-test.http2xx.io/oidc';
+    const DEFAULT_CLIENT_ID = '6nm6xb1o4gtonvd9tdctj';
     const DEFAULT_SCOPES = 'openid profile email';
 
     // Retrieve saved configuration
