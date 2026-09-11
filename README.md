@@ -34,7 +34,7 @@ You can point this app to **Logto**, **Keycloak**, **Auth0**, **Okta**, **Zitade
 ### App In-Browser Configuration
 Click the **⚙ Config** button in the header of the app to set or adjust:
 * **Client ID / App ID**: Your Logto App ID.
-* **OIDC Issuer**: Default is `https://logto-test.http2xx.io/oidc`.
+* **OIDC Issuer**: Default is `https://auth.http2xx.io/oidc`.
 * **Scopes**: Default is `openid profile email`.
 
 ---
