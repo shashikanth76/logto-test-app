@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP2XX Test App | Pure Native OIDC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #3b82f6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --code-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      padding: 1.1rem 1.5rem;
+      border-radius: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent-gradient);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: white;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+    }
+
+    .badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--success);
+    }
+
+    .badge.native {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      color: #c084fc;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      backdrop-filter: blur(16px);
+    }
+
+    .banner {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.82rem;
+      color: #93c5fd;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 0.75rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .config-item {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+    }
+
+    .config-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .config-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-meta h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .user-meta p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.5rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .code-container {
+      position: relative;
+      border-radius: 0.75rem;
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    pre {
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      overflow-x: auto;
+      max-height: 400px;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .spinner {
+      width: 2.2rem;
+      height: 2.2rem;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.25rem auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--card-border);
+      padding: 0.65rem 0.85rem;
+      border-radius: 0.5rem;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header>
+      <div class="brand">
+        <div class="logo-icon">H2</div>
+        <div>
+          <h1>HTTP2XX Test App</h1>
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.15rem;">
+            <span class="badge native">Pure Standard OIDC + PKCE</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Zero Vendor Lock-in</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <span id="statusBadge" class="badge">
+          <span class="badge-dot"></span>
+          <span id="statusText">Initializing...</span>
+        </span>
+        <button id="configBtn" class="btn btn-secondary btn-sm" title="Configure OIDC Issuer / Client ID">⚙ Config</button>
+      </div>
+    </header>
+
+    <!-- Standards Protocol Callout -->
+    <div class="banner">
+      <div>
+        ⚡ <strong>Pure Native Protocols:</strong> Operates strictly via RFC 7636 (PKCE), RFC 6749 (OAuth 2.0), and OpenID Connect Core 1.0 using standard browser Web APIs (<code>fetch</code> &amp; <code>crypto.subtle</code>). No proprietary vendor SDK.
+      </div>
+    </div>
+
+    <!-- Configuration Modal / Section -->
+    <div id="configSection" class="card hidden">
+      <h3 style="margin-bottom: 0.5rem;">OIDC Provider Configuration</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        Configure your standard OpenID Connect provider endpoints and Client ID. Settings persist across page loads in your browser's <code style="color: #a78bfa;">localStorage</code>.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600;">Client ID / App ID</label>
+          <input id="clientIdInput" class="input-field" placeholder="e.g. 5x4abcde12345 (From Logto Console)" />
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600;">OIDC Issuer / Base URL</label>
+          <input id="issuerInput" class="input-field" value="https://auth.allsrc.dev/oidc" />
+          <small style="font-size: 0.75rem; color: var(--text-muted);">Must host <code>.well-known/openid-configuration</code></small>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600;">Scopes</label>
+          <input id="scopesInput" class="input-field" value="openid profile email" />
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
+          <button id="closeConfigBtn" class="btn btn-secondary btn-sm">Cancel</button>
+          <button id="saveConfigBtn" class="btn btn-primary btn-sm">Save &amp; Reload</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alertBox" class="alert hidden">
+      <span id="alertIcon">⚠️</span>
+      <div id="alertMessage" style="flex: 1;"></div>
+    </div>
+
+    <!-- Loading View -->
+    <div id="loadingView" class="card" style="text-align: center; padding: 3rem 1rem;">
+      <div class="spinner"></div>
+      <h2 id="loadingTitle" style="font-size: 1.15rem; margin-bottom: 0.5rem;">Discovering OIDC Provider...</h2>
+      <p id="loadingDesc" style="font-size: 0.85rem; color: var(--text-muted);">Fetching OpenID configuration and checking session.</p>
+    </div>
+
+    <!-- Signed Out View -->
+    <div id="signedOutView" class="card hidden">
+      <div style="max-width: 620px; margin: 0 auto; text-align: center; padding: 1.5rem 0;">
+        <h2 style="font-size: 1.6rem; margin-bottom: 0.75rem; font-weight: 700;">Authenticate via OpenID Connect</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Initiates an RFC 7636 Authorization Code flow with SHA-256 PKCE against <strong id="heroIssuerName" style="color: var(--text);">auth.allsrc.dev</strong>.
+        </p>
+
+        <button id="signInBtn" class="btn btn-primary" style="font-size: 1rem; padding: 0.85rem 2.25rem;">
+          Sign in via auth.allsrc.dev &rarr;
+        </button>
+      </div>
+
+      <div class="config-grid">
+        <div class="config-item">
+          <div class="config-label">OIDC Issuer</div>
+          <div id="displayIssuer" class="config-value">https://auth.allsrc.dev/oidc</div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">Client ID</div>
+          <div id="displayClientId" class="config-value">(Not configured)</div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">Redirect URI (Callback)</div>
+          <div id="displayRedirectUri" class="config-value">-</div>
+        </div>
+        <div class="config-item">
+          <div class="config-label">Post Logout URI</div>
+          <div id="displayPostLogoutUri" class="config-value">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signed In View -->
+    <div id="signedInView" class="card hidden">
+      <div class="user-profile">
+        <div id="userAvatar" class="avatar">U</div>
+        <div class="user-meta" style="flex: 1;">
+          <h2 id="userName">User</h2>
+          <p id="userEmail">user@example.com</p>
+          <p id="userSub" style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; margin-top: 0.35rem; color: #93c5fd;">sub: -</p>
+        </div>
+        <div>
+          <button id="signOutBtn" class="btn btn-danger btn-sm">Sign Out (RP-Initiated)</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="claims">Decoded Claims (ID Token)</button>
+          <button class="tab-btn" data-tab="userinfo">UserInfo Endpoint (/me)</button>
+          <button class="tab-btn" data-tab="tokens">Raw Tokens &amp; Response</button>
+          <button class="tab-btn" data-tab="discovery">OIDC Discovery Document</button>
+        </div>
+
+        <div class="code-container">
+          <div class="code-header">
+            <span id="tabTitle">Decoded ID Token Payload</span>
+            <button id="copyBtn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.65rem; font-size: 0.75rem;">Copy JSON</button>
+          </div>
+          <pre id="codeDisplay">// Loading payload...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // =========================================================================
+    // Pure Native OpenID Connect (OIDC) + PKCE Implementation (Zero Vendor SDK)
+    // Conforms strictly to RFC 7636, RFC 6749, and OpenID Connect Core 1.0.
+    // =========================================================================
+
+    const DEFAULT_ISSUER = 'https://auth.allsrc.dev/oidc';
+    const DEFAULT_CLIENT_ID = '';
+    const DEFAULT_SCOPES = 'openid profile email';
+
+    // Retrieve saved configuration
+    const issuer = localStorage.getItem('oidc_issuer') || DEFAULT_ISSUER;
+    const clientId = localStorage.getItem('oidc_client_id') || DEFAULT_CLIENT_ID;
+    const scopes = localStorage.getItem('oidc_scopes') || DEFAULT_SCOPES;
+
+    // Detect environment origin & calculate redirect paths
+    const currentOrigin = window.location.origin;
+    let basePath = window.location.pathname
+      .replace(/\/callback\/?$/, '')
+      .replace(/\/404\.html$/, '')
+      .replace(/\/index\.html$/, '');
+    if (basePath.endsWith('/')) {
+      basePath = basePath.slice(0, -1);
+    }
+    const redirectUri = `${currentOrigin}${basePath}/callback`;
+    const postSignOutUri = `${currentOrigin}${basePath}/`;
+
+    // DOM Elements
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const loadingView = document.getElementById('loadingView');
+    const loadingTitle = document.getElementById('loadingTitle');
+    const loadingDesc = document.getElementById('loadingDesc');
+    const signedOutView = document.getElementById('signedOutView');
+    const signedInView = document.getElementById('signedInView');
+    const alertBox = document.getElementById('alertBox');
+    const alertMessage = document.getElementById('alertMessage');
+    const configSection = document.getElementById('configSection');
+
+    const clientIdInput = document.getElementById('clientIdInput');
+    const issuerInput = document.getElementById('issuerInput');
+    const scopesInput = document.getElementById('scopesInput');
+
+    const displayIssuer = document.getElementById('displayIssuer');
+    const displayClientId = document.getElementById('displayClientId');
+    const displayRedirectUri = document.getElementById('displayRedirectUri');
+    const displayPostLogoutUri = document.getElementById('displayPostLogoutUri');
+    const heroIssuerName = document.getElementById('heroIssuerName');
+
+    const signInBtn = document.getElementById('signInBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const configBtn = document.getElementById('configBtn');
+    const closeConfigBtn = document.getElementById('closeConfigBtn');
+    const saveConfigBtn = document.getElementById('saveConfigBtn');
+
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    const userSub = document.getElementById('userSub');
+    const userAvatar = document.getElementById('userAvatar');
+    const codeDisplay = document.getElementById('codeDisplay');
+    const tabTitle = document.getElementById('tabTitle');
+    const copyBtn = document.getElementById('copyBtn');
+
+    let discoveryDoc = null;
+    let sessionData = {
+      claims: null,
+      userInfo: null,
+      tokenResponse: null,
+      discovery: null
+    };
+    let activeTab = 'claims';
+
+    // Populate Initial Config Display
+    clientIdInput.value = clientId;
+    issuerInput.value = issuer;
+    scopesInput.value = scopes;
+    displayIssuer.textContent = issuer;
+    displayClientId.textContent = clientId || '(Not configured - Click ⚙ Config)';
+    displayRedirectUri.textContent = redirectUri;
+    displayPostLogoutUri.textContent = postSignOutUri;
+    try {
+      heroIssuerName.textContent = new URL(issuer).hostname;
+    } catch(e) {}
+
+    // Config Actions
+    configBtn.addEventListener('click', () => configSection.classList.toggle('hidden'));
+    closeConfigBtn.addEventListener('click', () => configSection.classList.add('hidden'));
+    saveConfigBtn.addEventListener('click', () => {
+      const newClientId = clientIdInput.value.trim();
+      const newIssuer = issuerInput.value.trim().replace(/\/$/, '');
+      const newScopes = scopesInput.value.trim();
+      if (newClientId) localStorage.setItem('oidc_client_id', newClientId);
+      if (newIssuer) localStorage.setItem('oidc_issuer', newIssuer);
+      if (newScopes) localStorage.setItem('oidc_scopes', newScopes);
+      window.location.href = `${currentOrigin}${basePath}/`;
+    });
+
+    // Notification helpers
+    function showAlert(msg, isError = false) {
+      alertBox.classList.remove('hidden', 'alert-warning', 'alert-error');
+      alertBox.classList.add(isError ? 'alert-error' : 'alert-warning');
+      document.getElementById('alertIcon').textContent = isError ? '❌' : '⚠️';
+      alertMessage.innerHTML = msg;
+    }
+
+    // -------------------------------------------------------------------------
+    // Cryptographic Helpers (Native Web Crypto API - RFC 7636 PKCE)
+    // -------------------------------------------------------------------------
+
+    function generateRandomString(length = 64) {
+      const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+      const array = new Uint8Array(length);
+      window.crypto.getRandomValues(array);
+      return Array.from(array, byte => charset[byte % charset.length]).join('');
+    }
+
+    function base64UrlEncode(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let str = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        str += String.fromCharCode(bytes[i]);
+      }
+      return btoa(str)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(codeVerifier);
+      const digest = await window.crypto.subtle.digest('SHA-256', data);
+      return base64UrlEncode(digest);
+    }
+
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return { error: 'Failed to decode JWT payload: ' + e.message };
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // OpenID Connect Discovery & Protocol Flows
+    // -------------------------------------------------------------------------
+
+    async function fetchOidcDiscovery(issuerUrl) {
+      const wellKnownUrl = `${issuerUrl.replace(/\/$/, '')}/.well-known/openid-configuration`;
+      const res = await fetch(wellKnownUrl);
+      if (!res.ok) {
+        throw new Error(`Failed to load OIDC discovery document from ${wellKnownUrl}: HTTP ${res.status}`);
+      }
+      return await res.json();
+    }
+
+    async function startLogin() {
+      if (!clientId) {
+        showAlert('Please configure your Client ID before signing in.');
+        configSection.classList.remove('hidden');
+        return;
+      }
+
+      if (!discoveryDoc?.authorization_endpoint) {
+        showAlert('Authorization endpoint not found in discovery document.', true);
+        return;
+      }
+
+      // RFC 7636: Generate PKCE parameters
+      const codeVerifier = generateRandomString(64);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      const state = generateRandomString(32);
+      const nonce = generateRandomString(32);
+
+      // Persist in sessionStorage for callback validation
+      sessionStorage.setItem('oidc_code_verifier', codeVerifier);
+      sessionStorage.setItem('oidc_state', state);
+      sessionStorage.setItem('oidc_nonce', nonce);
+
+      // Construct standard Authorization URL
+      const authUrl = new URL(discoveryDoc.authorization_endpoint);
+      authUrl.searchParams.set('client_id', clientId);
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('scope', scopes);
+      authUrl.searchParams.set('state', state);
+      authUrl.searchParams.set('nonce', nonce);
+      authUrl.searchParams.set('code_challenge', codeChallenge);
+      authUrl.searchParams.set('code_challenge_method', 'S256');
+
+      // Redirect browser to IdP
+      window.location.href = authUrl.toString();
+    }
+
+    async function handleCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const returnedState = params.get('state');
+      const error = params.get('error');
+      const errorDescription = params.get('error_description');
+
+      if (error) {
+        throw new Error(`Authentication error from provider: ${error} (${errorDescription || 'no details'})`);
+      }
+
+      if (!code) {
+        return false;
+      }
+
+      loadingTitle.textContent = 'Exchanging Authorization Code...';
+      loadingDesc.textContent = 'Validating PKCE code verifier and exchanging code at token endpoint';
+
+      // Validate state parameter to prevent CSRF
+      const savedState = sessionStorage.getItem('oidc_state');
+      const codeVerifier = sessionStorage.getItem('oidc_code_verifier');
+
+      if (!savedState || returnedState !== savedState) {
+        throw new Error('State validation failed: possible CSRF or expired session.');
+      }
+
+      if (!codeVerifier) {
+        throw new Error('PKCE code verifier missing from session storage.');
+      }
+
+      // RFC 6749 / RFC 7636: Exchange code for tokens via standard POST
+      const tokenBody = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        code: code,
+        redirect_uri: redirectUri,
+        code_verifier: codeVerifier
+      });
+
+      const tokenRes = await fetch(discoveryDoc.token_endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: tokenBody.toString()
+      });
+
+      if (!tokenRes.ok) {
+        const errText = await tokenRes.text();
+        throw new Error(`Token endpoint returned error (${tokenRes.status}): ${errText}`);
+      }
+
+      const tokenData = await tokenRes.json();
+
+      // Store tokens in sessionStorage
+      sessionStorage.setItem('oidc_tokens', JSON.stringify(tokenData));
+
+      // Clean up temporary PKCE keys from sessionStorage
+      sessionStorage.removeItem('oidc_code_verifier');
+      sessionStorage.removeItem('oidc_state');
+      sessionStorage.removeItem('oidc_nonce');
+
+      // Clean browser URL
+      window.history.replaceState({}, document.title, `${currentOrigin}${basePath}/`);
+
+      return true;
+    }
+
+    async function handleLogout() {
+      const tokens = JSON.parse(sessionStorage.getItem('oidc_tokens') || '{}');
+      sessionStorage.removeItem('oidc_tokens');
+
+      if (discoveryDoc?.end_session_endpoint) {
+        // RP-Initiated Logout (OpenID Connect RP-Initiated Logout 1.0)
+        const logoutUrl = new URL(discoveryDoc.end_session_endpoint);
+        if (tokens.id_token) {
+          logoutUrl.searchParams.set('id_token_hint', tokens.id_token);
+        }
+        logoutUrl.searchParams.set('post_logout_redirect_uri', postSignOutUri);
+        logoutUrl.searchParams.set('client_id', clientId);
+        window.location.href = logoutUrl.toString();
+      } else {
+        window.location.href = `${currentOrigin}${basePath}/`;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Tab & Content Rendering
+    // -------------------------------------------------------------------------
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTab = btn.getAttribute('data-tab');
+        renderTabContent();
+      });
+    });
+
+    copyBtn.addEventListener('click', () => {
+      let text = '';
+      if (activeTab === 'claims') text = JSON.stringify(sessionData.claims, null, 2);
+      else if (activeTab === 'userinfo') text = JSON.stringify(sessionData.userInfo, null, 2);
+      else if (activeTab === 'tokens') text = JSON.stringify(sessionData.tokenResponse, null, 2);
+      else if (activeTab === 'discovery') text = JSON.stringify(sessionData.discovery, null, 2);
+
+      navigator.clipboard.writeText(text).then(() => {
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = prev, 1500);
+      });
+    });
+
+    function renderTabContent() {
+      if (activeTab === 'claims') {
+        tabTitle.textContent = 'Decoded ID Token Payload (OpenID Connect Claims)';
+        codeDisplay.textContent = sessionData.claims ? JSON.stringify(sessionData.claims, null, 2) : '// No ID token claims';
+      } else if (activeTab === 'userinfo') {
+        tabTitle.textContent = 'Standard UserInfo Endpoint Response (/me)';
+        codeDisplay.textContent = sessionData.userInfo ? JSON.stringify(sessionData.userInfo, null, 2) : '// No UserInfo returned';
+      } else if (activeTab === 'tokens') {
+        tabTitle.textContent = 'Full Token Endpoint Response (RFC 6749)';
+        codeDisplay.textContent = sessionData.tokenResponse ? JSON.stringify(sessionData.tokenResponse, null, 2) : '// No token response';
+      } else if (activeTab === 'discovery') {
+        tabTitle.textContent = 'OpenID Connect Discovery Document (.well-known/openid-configuration)';
+        codeDisplay.textContent = sessionData.discovery ? JSON.stringify(sessionData.discovery, null, 2) : '// No discovery document';
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Main App Initialization
+    // -------------------------------------------------------------------------
+
+    async function init() {
+      // 1. Fetch OIDC Discovery
+      try {
+        discoveryDoc = await fetchOidcDiscovery(issuer);
+        sessionData.discovery = discoveryDoc;
+      } catch (err) {
+        loadingView.classList.add('hidden');
+        showAlert(`<strong>Discovery Error:</strong> Could not connect to OIDC provider at <code>${issuer}</code>: ${err.message}`, true);
+        signedOutView.classList.remove('hidden');
+        return;
+      }
+
+      // Check if this execution is a callback from the IdP
+      const isCallback = window.location.pathname.endsWith('/callback') || window.location.search.includes('code=');
+      if (isCallback) {
+        try {
+          await handleCallback();
+        } catch (err) {
+          loadingView.classList.add('hidden');
+          showAlert(`<strong>Sign-in Callback Error:</strong> ${err.message}`, true);
+          signedOutView.classList.remove('hidden');
+          return;
+        }
+      }
+
+      // 2. Check if we have active tokens stored
+      const storedTokensRaw = sessionStorage.getItem('oidc_tokens');
+      if (storedTokensRaw) {
+        try {
+          const tokens = JSON.parse(storedTokensRaw);
+          sessionData.tokenResponse = tokens;
+
+          // Parse ID Token claims
+          if (tokens.id_token) {
+            sessionData.claims = parseJwt(tokens.id_token);
+          }
+
+          // Fetch UserInfo if access_token exists
+          if (tokens.access_token && discoveryDoc.userinfo_endpoint) {
+            try {
+              const userRes = await fetch(discoveryDoc.userinfo_endpoint, {
+                headers: {
+                  'Authorization': `Bearer ${tokens.access_token}`
+                }
+              });
+              if (userRes.ok) {
+                sessionData.userInfo = await userRes.json();
+              }
+            } catch (e) {
+              console.warn('UserInfo fetch error:', e);
+            }
+          }
+
+          // Render User Info
+          const name = sessionData.userInfo?.name || sessionData.claims?.name || sessionData.claims?.username || 'User';
+          const email = sessionData.userInfo?.email || sessionData.claims?.email || 'No email provided';
+          const sub = sessionData.claims?.sub || sessionData.userInfo?.sub || '-';
+
+          userName.textContent = name;
+          userEmail.textContent = email;
+          userSub.textContent = `sub: ${sub}`;
+
+          const picture = sessionData.userInfo?.picture || sessionData.claims?.picture;
+          if (picture) {
+            userAvatar.innerHTML = `<img src="${picture}" alt="${name}" />`;
+          } else {
+            userAvatar.textContent = name.charAt(0).toUpperCase();
+          }
+
+          renderTabContent();
+
+          statusBadge.classList.add('active');
+          statusText.textContent = 'Authenticated (Native OIDC)';
+          loadingView.classList.add('hidden');
+          signedInView.classList.remove('hidden');
+
+          signOutBtn.addEventListener('click', handleLogout);
+          return;
+        } catch (e) {
+          console.error('Session restoration error:', e);
+          sessionStorage.removeItem('oidc_tokens');
+        }
+      }
+
+      // 3. Render Signed Out View
+      loadingView.classList.add('hidden');
+      signedOutView.classList.remove('hidden');
+      statusBadge.classList.remove('active');
+      statusText.textContent = 'Signed Out';
+
+      if (!clientId) {
+        showAlert('<strong>Configuration needed:</strong> Please set your Client ID (App ID from Logto Console) by clicking <strong>⚙ Config</strong> in the top-right header.');
+      }
+
+      signInBtn.addEventListener('click', startLogin);
+    }
+
+    init();
+  </script>
+</body>
+</html>
